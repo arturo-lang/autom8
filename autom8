@@ -1,0 +1,180 @@
+#!/usr/bin/env arturo
+;========================================================
+; Autom8
+;
+; Fast templating for any type of project
+; in Arturo
+;
+; @file: autom8.art
+; @author: drkameleon
+;========================================================
+
+;=======================================
+; Setup
+;=======================================
+
+Autom8: #[
+    version: "0.1"
+    logo: {:
+                      .--.                    .---.  
+      --.--..--..--.--'  '--.----. .--.--.--.|- O -| 
+    ' .-.  ||  ||  |'-.  .-'| .-. ||        |.'   '. 
+    | '-'  |'  ''  '  |  |  ' '-' '|  |  |  ||- O -| 
+     `--`--' `----'   '--'   `---' `--`--`--' `---'  
+    :}
+] 
+
+;=======================================
+; Entry function
+;=======================================
+
+autom8: function [cfg, src, tgt][
+    ;-----------------------------
+    ; Globals
+    ;-----------------------------
+
+    InfoPadding: 13
+    InfoLineSize: 75
+    Debug: false
+    Verbose: false
+    DataSubfolder: "data"
+
+    ;-----------------------------
+    ; Private Helpers
+    ;-----------------------------
+
+    showHeader: function [message][
+        if Verbose [
+            colorize: function[X][color.magenta X]
+            if attr 'success -> colorize: function[X][color.green X]
+
+            print ""
+            print colorize repeat "=" InfoLineSize
+            print [pad "" InfoPadding colorize upper message]
+            print colorize repeat "=" InfoLineSize 
+        ]
+    ]
+
+    showProgress: function [current,total,file][
+        if Verbose ->
+            print [
+                color.cyan pad ~"[|current+1|/|total|]" InfoPadding
+                join.with: " ▪︎ " select split.path file -- extract.extension file => [not? empty?]
+            ]
+    ]
+
+    ;-----------------------------
+    ; Main
+    ;-----------------------------
+
+    try -> Debug: cfg\debug
+    try -> Verbose: cfg\verbose
+    try -> DataSubfolder: cfg\data
+
+    dataSrc: join.path @[src DataSubfolder]
+    if not? exists? .directory dataSrc -> panic ~"data folder: |DataSubfolder| doesn't exist"
+
+    files: list.recursive dataSrc
+
+    loop @ cfg\rules [rule, settings][
+        try -> showHeader settings\title
+
+        fileSet: select files => [not? empty? match & rule]
+        fileCount: size fileSet
+
+        loop.with:'c fileSet 'srcFile [
+            ;-----------------------------
+            ; resolve paths
+            ;-----------------------------
+
+            relSrc: normalize srcFile -- dataSrc ++ "/"
+            showProgress c fileCount relSrc
+
+            relTgt: ""
+            try? -> relTgt: call settings\target @[relSrc]
+            else -> relTgt: relSrc
+
+            tgtFile: join.path @[tgt relTgt]
+            tgtDir: extract.directory tgtFile
+            
+            tmpl: ""
+            try [
+                tmpl: (function? settings\template)? -> call settings\template @[relSrc]
+                                                     -> settings\template
+            ]
+
+            tmpl: join.path @[src normalize tmpl]
+
+            route: split.path relSrc -- extract.extension relSrc
+
+            if Debug -> 
+                print [ "\n"
+                    "srcFile:"  srcFile "\n"
+                    "relSrc:"   relSrc "\n"
+                    "tgtFile:"  tgtFile "\n"
+                    "tgtDir:"   tgtDir "\n"
+                    "relTgt:"   relTgt "\n"
+                    "tmpl:"     tmpl "\n"
+                    "route:"    route "\n"
+                ]
+
+            ;-----------------------------
+            ; process file
+            ;-----------------------------
+
+            ; read data
+            W: #.data srcFile
+
+            ; preprocess data - if necessary
+            try -> W: call settings\pre @[relSrc W]
+
+            ; process template
+            content: render.template read tmpl
+
+            ; postprocess content - if necessary
+            try -> content: call settings\post @[relSrc content]
+
+            ; create target directory recursively - if not exists
+            if not? exists? .directory tgtDir [
+                write.directory tgtDir ø
+            ]
+
+            ; write file to target directory
+            write tgtFile content
+        ]
+    ]
+
+    showHeader.success "Project complete :)"
+]
+
+;=======================================
+; Standalone tool
+;=======================================
+
+if standalone? ::
+
+    if 1 < size arg -> panic "too many arguments - try --help for usage info"
+
+    defaultOutputDir: "/_out"
+    defaultConfig: "config.art"
+
+    print color.bold Autom8\logo
+
+    src: normalize "."
+    try -> src: arg\0 
+    
+    tgt: normalize join.path @[src defaultOutputDir]
+    cfg: join.path @[src defaultConfig]
+    
+    try -> tgt: normalize args\at
+    try -> cfg: args\config
+
+    if not? exists? .directory src -> panic "given source directory doesn't exist"
+    if not? exists? cfg -> panic "valid configuration file not found"
+
+    autom8 #cfg src tgt
+
+;========================================================
+; This is the end,
+; my only friend, the end...
+;========================================================
