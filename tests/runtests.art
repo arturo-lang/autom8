@@ -1,0 +1,29 @@
+
+performTest: function [example][
+    main: extract.basename example
+
+    execute ~"cp -R |example| tests/|main|"
+    execute ~"rm -rf tests/|main|/_out"
+    execute ~"./autom8 tests/|main|"
+
+    loop list.recursive ~"|example|/_out" 'original [
+        subpath: original -- ~"|example|/_out/"
+        newone:  ~"tests/|main|/_out/|subpath|"
+
+        if? exists? newone [
+            if not? equal? read original read newone [
+                panic.code:1 "output not the same"
+            ]
+        ]
+        else [
+            panic.code:1 "something went wrong"
+        ]
+    ]
+
+    execute ~"rm -rf tests/|main|"
+]
+
+loop list "examples" 'example ->
+    performTest example
+
+print color.green.bold "All set! :)"
