@@ -1,4 +1,4 @@
-name: "Build & Test"
+name: "Release"
 on:
   push:
     branches:
@@ -56,6 +56,7 @@ jobs:
           
       - name: Package binary
         run: |
+          mv autom8 autom8.art
           ./package autom8.art
           ls -la
 
