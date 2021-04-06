@@ -1,0 +1,101 @@
+name: "Build & Test"
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+  pull_request:
+    paths-ignore:
+      - 'docs/*'
+      - '*.yml'
+      - '*.md'
+      - 'LICENSE'
+
+env:
+  app-name: autom8
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:  
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+        version:
+          - mini
+    steps:
+      - name: "Cancel similar actions in progress"
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{ github.token }}
+
+      - name: "Get Arturo"
+        uses: actions/checkout@main
+        with:
+          repository: arturo-lang/arturo
+          submodules: recursive
+
+      - name: Install Nim
+        run: |
+          wget -qO - https://nim-lang.org/choosenim/init.sh | bash -s -- -y
+          echo "$HOME/.nimble/bin" >> $GITHUB_PATH
+          
+      - name: Verify dependecies
+        run: |
+          nim --version
+
+      - name: "Checkout"
+        uses: actions/checkout@main
+        with:
+          submodules: recursive
+          
+      - name: Package binary
+        run: |
+          ./package autom8.art
+          ls -la
+
+      - name: Create artifact
+        run: |
+          install -m 0755 ./${{ env.app-name }} .
+          tar czf ${{ env.app-name }}.tar.gz ${{ env.app-name }} README.md LICENSE
+
+      - name: Upload Artifact
+        uses: 'actions/upload-artifact@v1'
+        with:
+          name: ${{ env.app-name }}.tar.gz
+          path: ${{ env.app-name }}.tar.gz
+
+      - uses: actions/download-artifact@v2
+        with:
+          path: ./assets
+      
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Create Release
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body: |
+            Official Release
+            ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Assets
+        id: upload-release-assets
+        uses: dwenegar/upload-release-assets@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_id: ${{ steps.create-release.outputs.id }}
+          assets_path: ./assets
