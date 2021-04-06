@@ -29,6 +29,7 @@ Autom8: #[
 ;=======================================
 
 autom8: function [cfg, src, tgt][
+    
     ;-----------------------------
     ; Globals
     ;-----------------------------
@@ -83,6 +84,7 @@ autom8: function [cfg, src, tgt][
         fileCount: size fileSet
 
         loop.with:'c fileSet 'srcFile [
+
             ;-----------------------------
             ; resolve paths
             ;-----------------------------
