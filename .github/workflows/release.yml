@@ -1,17 +1,8 @@
 name: "Release"
 on:
   push:
-    branches:
-      - '**'
-    tags-ignore:
-      - '**'
-  pull_request:
-    paths-ignore:
-      - 'docs/*'
-      - '*.yml'
-      - '*.md'
-      - 'LICENSE'
-
+    tags:
+      - 'v*.*.*'
 env:
   app-name: autom8
 
@@ -53,10 +44,11 @@ jobs:
         uses: actions/checkout@main
         with:
           submodules: recursive
+          path: "autom8"
           
       - name: Package binary
         run: |
-          mv autom8 autom8.art
+          mv autom8/autom8 autom8.art
           ./package autom8.art
           ls -la
 
