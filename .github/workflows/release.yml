@@ -11,12 +11,13 @@ defaults:
     shell: bash -l {0}
 
 jobs:  
-  build:
+  package:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os:
           - ubuntu-latest
+          - macos-latest
         version:
           - mini
     steps:
@@ -55,14 +56,21 @@ jobs:
       - name: Create artifact
         run: |
           install -m 0755 ./${{ env.app-name }} .
-          tar czf ${{ env.app-name }}.tar.gz ${{ env.app-name }} README.md LICENSE
+          tar czf ${{ env.app-name }}-${{runner.os}}.tar.gz ${{ env.app-name }} README.md LICENSE
 
       - name: Upload Artifact
         uses: 'actions/upload-artifact@v1'
         with:
-          name: ${{ env.app-name }}.tar.gz
-          path: ${{ env.app-name }}.tar.gz
+          name: ${{ env.app-name }}-${{runner.os}}.tar.gz
+          path: ${{ env.app-name }}-${{runner.os}}.tar.gz
 
+  upload:
+    name: "Upload"
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: 
+      - package
+    steps:
       - uses: actions/download-artifact@v2
         with:
           path: ./assets
