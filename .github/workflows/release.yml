@@ -50,12 +50,13 @@ jobs:
       - name: Package binary
         run: |
           mv autom8/autom8 autom8.art
+          rm -rf autom8
           ./package autom8.art
           ls -la
 
       - name: Create artifact
         run: |
-          install -m 0755 ./${{ env.app-name }} .
+          install -m 0755 ./autom8 .
           tar czf ${{ env.app-name }}-${{runner.os}}.tar.gz ${{ env.app-name }} README.md LICENSE
 
       - name: Upload Artifact
