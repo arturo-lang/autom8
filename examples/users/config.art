@@ -1,0 +1,14 @@
+; Sample project
+; for converting a series of User data files
+; into HTML pages
+
+verbose: true
+
+rules: [
+    ".art$" # [
+        title: "Processing files"
+
+        target:   $[f][append f -- extract.extension f ".html"]
+        template: "template.html"
+    ]
+]
