@@ -148,7 +148,7 @@ if standalone? ::
     defaultOutputDir: "/_out"
     defaultConfig: "config.art"
 
-    print color.bold logo: {:
+    print color.bold {:
                       .--.                    .---.  
       --.--..--..--.--'  '--.----. .--.--.--.|- O -| 
     ' .-.  ||  ||  |'-.  .-'| .-. ||        |.'   '. 
