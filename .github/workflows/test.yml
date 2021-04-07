@@ -11,7 +11,7 @@ on:
       - '*.yml'
       - '*.md'
       - 'LICENSE'
- 
+
 defaults:
   run:
     shell: bash -l {0}
