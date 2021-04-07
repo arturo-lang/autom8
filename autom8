@@ -4,25 +4,13 @@
 ;
 ; Fast templating for any type of project
 ; in Arturo
-;
-; @file: autom8.art
-; @author: drkameleon
+;--------------------------------------------------------
+;; name: autom8
+;; version: 0.1.0
+;; author: drkameleon
+;; website: « https://github.com/arturo-lang/autom8
+;; category: [automation productivity]
 ;========================================================
-
-;=======================================
-; Setup
-;=======================================
-
-Autom8: #[
-    version: "0.1"
-    logo: {:
-                      .--.                    .---.  
-      --.--..--..--.--'  '--.----. .--.--.--.|- O -| 
-    ' .-.  ||  ||  |'-.  .-'| .-. ||        |.'   '. 
-    | '-'  |'  ''  '  |  |  ' '-' '|  |  |  ||- O -| 
-     `--`--' `----'   '--'   `---' `--`--`--' `---'  
-    :}
-] 
 
 ;=======================================
 ; Entry function
@@ -160,7 +148,13 @@ if standalone? ::
     defaultOutputDir: "/_out"
     defaultConfig: "config.art"
 
-    print color.bold Autom8\logo
+    print color.bold logo: {:
+                      .--.                    .---.  
+      --.--..--..--.--'  '--.----. .--.--.--.|- O -| 
+    ' .-.  ||  ||  |'-.  .-'| .-. ||        |.'   '. 
+    | '-'  |'  ''  '  |  |  ' '-' '|  |  |  ||- O -| 
+     `--`--' `----'   '--'   `---' `--`--`--' `---'  
+    :}
 
     src: normalize "."
     try -> src: arg\0 
