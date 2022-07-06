@@ -34,8 +34,8 @@ autom8: function [cfg, src, tgt][
 
     showHeader: function [message][
         if Verbose [
-            colorize: function[X][color.magenta X]
-            if attr 'success -> colorize: function[X][color.green X]
+            colorize: function[X][color #magenta X]
+            if attr 'success -> colorize: function[X][color #green X]
 
             print ""
             print colorize repeat "=" InfoLineSize
@@ -47,7 +47,7 @@ autom8: function [cfg, src, tgt][
     showProgress: function [current,total,file][
         if Verbose ->
             print [
-                color.cyan pad ~"[|current+1|/|total|]" InfoPadding
+                color #cyan pad ~"[|current+1|/|total|]" InfoPadding
                 join.with: " ▪︎ " select split.path file -- extract.extension file => [not? empty?]
             ]
     ]
@@ -148,7 +148,7 @@ if standalone? ::
     defaultOutputDir: "/_out"
     defaultConfig: "config.art"
 
-    print color.bold {:
+    print color #white.bold {:
                       .--.                    .---.  
       --.--..--..--.--'  '--.----. .--.--.--.|- O -| 
     ' .-.  ||  ||  |'-.  .-'| .-. ||        |.'   '. 
